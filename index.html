@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AJCC Staging</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <h1>AJCC Staging</h1>
+            <p>A quiet TNM companion</p>
+          </div>
+        </div>
+        <div class="edition-pill">Current AJCC mix · 8th + Version 9 lung</div>
+      </div>
+
+      <section id="home">
+        <div class="hero">
+          <h2>Stage with the categories you already use.</h2>
+          <p>
+            Choose a site, tap T, N, and M, and read the group instantly. Built for clinic speed, not for coding.
+          </p>
+        </div>
+        <div class="grid" id="site-grid"></div>
+      </section>
+
+      <section id="stage-view" class="stage-view hidden">
+        <header class="crumb">
+          <button class="back" id="back-btn">All sites</button>
+        </header>
+        <div class="layout">
+          <aside class="panel result">
+            <h3>Stage group</h3>
+            <div class="stage-badge">
+              <div class="kicker">Result</div>
+              <div class="stage" id="stage-out" aria-live="polite">—</div>
+              <div class="tnm" id="tnm-out"></div>
+            </div>
+            <ul class="notes" id="notes-out"></ul>
+            <div class="actions">
+              <button type="button" id="copy-btn">Copy summary</button>
+              <button type="button" class="ghost" id="print-btn">Print</button>
+            </div>
+            <textarea id="copy-text" class="hidden" aria-hidden="true"></textarea>
+          </aside>
+          <div class="panel form-panel">
+            <h2 class="site-title" id="site-title"></h2>
+            <p class="site-meta" id="site-meta"></p>
+            <form id="form-fields"></form>
+          </div>
+        </div>
+      </section>
+
+      <p class="disclaimer">
+        Educational reference only. Staging follows publicly described AJCC / UICC / IASLC TNM rules:
+        AJCC 8th edition for pancreas, stomach, colon, rectum, oesophagus, breast, and RCC;
+        AJCC Version 9 (effective 2025) for lung. Always confirm against the official AJCC Cancer Staging System
+        before using a stage for documentation or treatment. Breast prognostic stage (biomarkers) is not calculated.
+      </p>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
