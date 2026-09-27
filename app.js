@@ -6,7 +6,8 @@ const SITES = [
   { id: "oesophagus", name: "Oesophagus", edition: "AJCC 8th edition", blurb: "SCC and adenocarcinoma, including EGJ", swatch: "#d7e5f2" },
   { id: "breast", name: "Breast", edition: "AJCC 8th edition", blurb: "Anatomic TNM stage", swatch: "#f6e4d8" },
   { id: "lung", name: "Lung", edition: "AJCC Version 9 (2025)", blurb: "NSCLC and SCLC", swatch: "#dceee8" },
-  { id: "rcc", name: "Kidney (RCC)", edition: "AJCC 8th edition", blurb: "Renal cell carcinoma", swatch: "#eadfef" }
+  { id: "rcc", name: "Kidney (RCC)", edition: "AJCC 8th edition", blurb: "Renal cell carcinoma", swatch: "#eadfef" },
+  { id: "headneck", name: "Head and neck", edition: "AJCC 8th + Version 9", blurb: "Oral cavity, pharynx, larynx, salivary", swatch: "#e8d9c9" }
 ];
 
 const OPTIONS = {
@@ -199,6 +200,34 @@ const OPTIONS = {
       ["M0", "No distant metastasis"],
       ["M1", "Distant metastasis"]
     ]
+  },
+  headneck: {
+    extra: [
+      {
+        id: "subsite",
+        label: "Subsite",
+        options: [
+          ["oral", "Oral cavity"],
+          ["opc_hpv", "Oropharynx, HPV-associated"],
+          ["opc_neg", "Oropharynx, HPV-negative"],
+          ["hypo", "Hypopharynx"],
+          ["larynx", "Larynx"],
+          ["npc", "Nasopharynx"],
+          ["salivary", "Salivary glands"]
+        ]
+      },
+      {
+        id: "context",
+        label: "Staging context",
+        options: [
+          ["clinical", "Clinical (cTNM)"],
+          ["pathologic", "Pathologic (pTNM)"]
+        ]
+      }
+    ],
+    t: [],
+    n: [],
+    m: []
   }
 };
 
@@ -228,6 +257,163 @@ function colorectalOptions() {
       ["M1c", "Peritoneal metastasis"]
     ]
   };
+}
+
+function conventionalHnN(context) {
+  if (context === "pathologic") {
+    return [
+      ["N0", "No regional nodes"],
+      ["N1", "Single ipsilateral ≤ 3 cm, ENE−"],
+      ["N2a", "Single ipsilateral ≤ 3 cm ENE+, or > 3–6 cm ENE−"],
+      ["N2b", "Multiple ipsilateral ≤ 6 cm, ENE−"],
+      ["N2c", "Bilateral or contralateral ≤ 6 cm, ENE−"],
+      ["N3a", "> 6 cm, ENE−"],
+      ["N3b", "ENE+ (except the limited pN2a single-node pattern)"]
+    ];
+  }
+  return [
+    ["N0", "No regional nodes"],
+    ["N1", "Single ipsilateral ≤ 3 cm, no clinical ENE"],
+    ["N2a", "Single ipsilateral > 3–6 cm, no clinical ENE"],
+    ["N2b", "Multiple ipsilateral ≤ 6 cm, no clinical ENE"],
+    ["N2c", "Bilateral or contralateral ≤ 6 cm, no clinical ENE"],
+    ["N3a", "> 6 cm, no clinical ENE"],
+    ["N3b", "Clinically overt ENE"]
+  ];
+}
+
+function conventionalHnM() {
+  return [
+    ["M0", "No distant metastasis"],
+    ["M1", "Distant metastasis"]
+  ];
+}
+
+function getHnOptions(subsite, context) {
+  const oralT = [
+    ["Tis", "Carcinoma in situ"],
+    ["T1", "≤ 2 cm and DOI ≤ 5 mm"],
+    ["T2", "≤ 2 cm with DOI > 5–10 mm, or > 2–4 cm with DOI ≤ 10 mm"],
+    ["T3", "> 4 cm, or any size with DOI > 10 mm"],
+    ["T4a", "Moderately advanced: cortical bone, deep tongue muscle, maxillary sinus, or skin"],
+    ["T4b", "Very advanced: masticator space, pterygoid plates, skull base, or carotid"]
+  ];
+  const opcNegT = [
+    ["Tis", "Carcinoma in situ"],
+    ["T1", "≤ 2 cm"],
+    ["T2", "> 2–4 cm"],
+    ["T3", "> 4 cm, or extension to lingual surface of epiglottis"],
+    ["T4a", "Larynx, deep tongue muscle, medial pterygoid, hard palate, or mandible"],
+    ["T4b", "Lateral pterygoid, pterygoid plates, nasopharynx, skull base, or carotid"]
+  ];
+  const hypoT = [
+    ["Tis", "Carcinoma in situ"],
+    ["T1", "One subsite, ≤ 2 cm"],
+    ["T2", "More than one subsite or adjacent site, or > 2–4 cm, hemilarynx not fixed"],
+    ["T3", "> 4 cm, or hemilarynx fixation, or oesophageal invasion"],
+    ["T4a", "Thyroid/cricoid cartilage, hyoid, thyroid gland, or central compartment"],
+    ["T4b", "Prevertebral fascia, carotid, or mediastinal structures"]
+  ];
+  const larynxT = [
+    ["Tis", "Carcinoma in situ"],
+    ["T1", "Limited to one subsite; glottis: cord(s) with normal mobility"],
+    ["T2", "More than one larynx subsite, or impaired cord mobility"],
+    ["T3", "Cord fixation, inner cortex of thyroid cartilage, paraglottic or pre-epiglottic space"],
+    ["T4a", "Through thyroid cartilage, or extralaryngeal spread"],
+    ["T4b", "Prevertebral space, carotid, or mediastinal structures"]
+  ];
+
+  if (subsite === "opc_hpv") {
+    const t = [
+      ["Tis", "Carcinoma in situ"],
+      ["T0", "HPV-associated nodal disease, no identifiable primary"],
+      ["T1", "≤ 2 cm"],
+      ["T2", "> 2–4 cm"],
+      ["T3", "> 4 cm, or lingual surface of epiglottis"],
+      ["T4", "Larynx, deep tongue muscle, medial pterygoid, hard palate, mandible, or beyond"]
+    ];
+    const n =
+      context === "pathologic"
+        ? [
+            ["N0", "No regional nodes"],
+            ["N1a", "1 node, no pathologic ENE"],
+            ["N1b", "2–4 nodes, no pathologic ENE"],
+            ["N2", "> 4 nodes without ENE, or 1–4 nodes with ENE"],
+            ["N3", "> 4 nodes with pathologic ENE"]
+          ]
+        : [
+            ["N0", "No regional nodes"],
+            ["N1", "Ipsilateral node(s) ≤ 6 cm, no ENE"],
+            ["N2", "Contralateral/bilateral ≤ 6 cm, or ipsilateral with ENE"],
+            ["N3", "> 6 cm, or contralateral/bilateral with ENE"]
+          ];
+    return { t, n, m: conventionalHnM() };
+  }
+
+  if (subsite === "npc") {
+    return {
+      t: [
+        ["T0", "EBV-positive nodes, no nasopharyngeal primary"],
+        ["T1", "Nasopharynx, or nasal cavity / oropharynx without adjacent invasion"],
+        ["T2", "Parapharyngeal space, or medial/lateral pterygoid or prevertebral muscle"],
+        ["T3", "Unequivocal bone invasion (skull base, pterygoid, sinuses, cervical vertebrae)"],
+        ["T4", "Intracranial, cranial nerve, hypopharynx, orbit (incl. IOF), parotid, or beyond lateral pterygoid"]
+      ],
+      n: [
+        ["N0", "No regional nodes"],
+        ["N1", "Unilateral cervical and/or uni/bilateral retropharyngeal, ≤ 6 cm, above cricoid, no advanced ENE"],
+        ["N2", "Bilateral cervical, ≤ 6 cm, above cricoid, no advanced ENE"],
+        ["N3", "> 6 cm, below cricoid, or advanced ENE into muscle/skin/neurovascular"]
+      ],
+      m: [
+        ["M0", "No distant metastasis"],
+        ["M1a", "Distant metastasis, ≤ 3 lesions"],
+        ["M1b", "Distant metastasis, > 3 lesions"]
+      ]
+    };
+  }
+
+  if (subsite === "salivary") {
+    return {
+      t: [
+        ["Tis", "Carcinoma in situ"],
+        ["T1", "≤ 2 cm, no extraparenchymal extension"],
+        ["T2", "> 2–4 cm, no extraparenchymal extension"],
+        ["T3", "> 4 cm and/or extraparenchymal extension"],
+        ["T4a", "Skin, mandible, ear canal, and/or facial nerve"],
+        ["T4b", "Skull base, pterygoid plates, and/or carotid"]
+      ],
+      n: [
+        ["N0", "No regional nodes"],
+        ["N1", "1–3 nodes, no ENE"],
+        ["N2", "> 3 nodes, or any node with ENE"]
+      ],
+      m: conventionalHnM()
+    };
+  }
+
+  const t =
+    subsite === "oral" ? oralT : subsite === "hypo" ? hypoT : subsite === "larynx" ? larynxT : opcNegT;
+  return { t, n: conventionalHnN(context), m: conventionalHnM() };
+}
+
+function hnEdition(subsite) {
+  if (subsite === "opc_hpv" || subsite === "salivary") return "AJCC Version 9 (2026)";
+  if (subsite === "npc") return "AJCC Version 9 (2025)";
+  return "AJCC 8th edition";
+}
+
+function hnSubsiteLabel(subsite) {
+  const map = {
+    oral: "Oral cavity",
+    opc_hpv: "Oropharynx, HPV-associated",
+    opc_neg: "Oropharynx, HPV-negative",
+    hypo: "Hypopharynx",
+    larynx: "Larynx",
+    npc: "Nasopharynx",
+    salivary: "Salivary glands"
+  };
+  return map[subsite] || "Head and neck";
 }
 
 function nFamily(n) {
@@ -458,6 +644,61 @@ function stageRcc(s) {
   return "—";
 }
 
+function stageHeadNeck(s) {
+  const t = s.t;
+  const n = s.n;
+  const m = s.m;
+  const tF = tFamily(t);
+  const nF = nFamily(n);
+  const subsite = s.subsite;
+
+  if (subsite === "npc") {
+    if (m === "M1a") return "IVA";
+    if (m === "M1b" || m === "M1") return "IVB";
+    if (tF === "T4" || nF === "N3") return "III";
+    if (tF === "T3" || nF === "N2") return "II";
+    if ((tF === "T1" || tF === "T2" || t === "T0") && nF === "N1") return "IB";
+    if ((tF === "T1" || tF === "T2" || t === "T0") && n === "N0") return "IA";
+    return "—";
+  }
+
+  if (subsite === "salivary") {
+    if (m === "M1") return "IV";
+    if (t === "Tis") return n === "N0" ? "0" : "—";
+    if (nF === "N2" || (["T3", "T4a", "T4b"].includes(t) && nF === "N1")) return "IIIB";
+    if ((["T1", "T2"].includes(t) && nF === "N1") || (["T3", "T4a", "T4b"].includes(t) && n === "N0")) return "IIIA";
+    if (t === "T2" && n === "N0") return "II";
+    if (t === "T1" && n === "N0") return "I";
+    return "—";
+  }
+
+  if (subsite === "opc_hpv") {
+    if (m === "M1") return "IV";
+    if (t === "Tis") return n === "N0" ? "0" : "—";
+    const earlyT = ["T0", "T1", "T2"].includes(t);
+    if (s.context === "pathologic") {
+      const n0n1 = n === "N0" || n === "N1a" || n === "N1b";
+      if (earlyT && n0n1) return "I";
+      if ((earlyT && ["N2", "N3"].includes(n)) || (t === "T3" && ["N0", "N1a", "N1b", "N2"].includes(n))) return "II";
+      if ((t === "T3" && n === "N3") || t === "T4") return "III";
+      return "—";
+    }
+    if (earlyT && ["N0", "N1"].includes(n)) return "I";
+    if (earlyT && n === "N2") return "II";
+    if ((earlyT && n === "N3") || t === "T3" || t === "T4") return "III";
+    return "—";
+  }
+
+  if (m === "M1") return "IVC";
+  if (t === "Tis") return n === "N0" ? "0" : "—";
+  if (t === "T4b" || nF === "N3") return "IVB";
+  if (t === "T4a" || nF === "N2") return "IVA";
+  if (t === "T3" || nF === "N1") return "III";
+  if (t === "T2" && n === "N0") return "II";
+  if (t === "T1" && n === "N0") return "I";
+  return "—";
+}
+
 const STAGE_FNS = {
   pancreas: stagePancreas,
   stomach: stageStomach,
@@ -466,7 +707,8 @@ const STAGE_FNS = {
   oesophagus: stageOesophagus,
   breast: stageBreast,
   lung: stageLung,
-  rcc: stageRcc
+  rcc: stageRcc,
+  headneck: stageHeadNeck
 };
 
 const SIZE_SITES = {
@@ -543,6 +785,10 @@ const NOTES = {
   rcc: [
     "Applies to renal cell carcinoma. Urothelial carcinoma of the renal pelvis uses a different chapter.",
     "Contiguous adrenal invasion is T4; non-contiguous adrenal involvement is M1."
+  ],
+  headneck: [
+    "Choose the subsite first. Nasopharynx, HPV-associated oropharynx, and salivary glands use AJCC Version 9.",
+    "Oral cavity, HPV-negative oropharynx, hypopharynx, and larynx remain AJCC 8th edition."
   ]
 };
 
@@ -570,25 +816,107 @@ function renderHome() {
   });
 }
 
-function chipGroup(id, items) {
+function chipGroup(id, items, useDescTitle) {
+  const current = state.values[id];
   return items
-    .map(
-      ([value, desc], i) => `
-      <button type="button" class="chip${i === 0 ? " active" : ""}" data-group="${id}" data-value="${value}">
-        ${value}<small>${desc}</small>
-      </button>`
-    )
+    .map(([value, desc]) => {
+      const active = current ? current === value : value === items[0][0];
+      const title = useDescTitle ? desc : value;
+      const sub = useDescTitle ? "" : `<small>${desc}</small>`;
+      return `
+      <button type="button" class="chip${active ? " active" : ""}" data-group="${id}" data-value="${value}">
+        ${title}${sub}
+      </button>`;
+    })
     .join("");
+}
+
+function currentTnmSpec() {
+  if (state.site === "headneck") {
+    return getHnOptions(state.values.subsite, state.values.context);
+  }
+  const spec = OPTIONS[state.site];
+  return { t: spec.t, n: spec.n, m: spec.m };
+}
+
+function hnNotes(subsite) {
+  const extra = {
+    oral: "Oral cavity T uses both size and depth of invasion (DOI).",
+    opc_hpv: "Version 9: clinical ENE/iENE upstages cN. Pathologic N1 is split into N1a/N1b; ENE upstages pN and can create pN3.",
+    opc_neg: "HPV-negative oropharynx uses the conventional mucosal H&N table, including ENE as N3b clinically.",
+    hypo: "Same N and stage groups as HPV-negative oropharynx and larynx.",
+    larynx: "T1–T3 descriptors differ for glottis, supraglottis, and subglottis; T4a/T4b are shared.",
+    npc: "Version 9: T3 needs unequivocal bone invasion. Advanced ENE is N3. Stage IV is M1 only (M1a ≤3 lesions, M1b >3).",
+    salivary: "Version 9 includes major and minor glands. N is by node count (1–3 vs >3) plus ENE. There is no N3. Stage IV is M1 only."
+  };
+  return [
+    `${hnSubsiteLabel(subsite)} · ${hnEdition(subsite)}.`,
+    extra[subsite],
+    "Unknown-primary EBV-positive nodes are staged as nasopharynx T0. Unknown-primary HPV-associated nodes are staged as oropharynx T0."
+  ];
+}
+
+function bindExtraChips() {
+  $("#form-fields")
+    .querySelectorAll(".extra-field .chip")
+    .forEach((chip) => {
+      chip.addEventListener("click", () => {
+        const group = chip.dataset.group;
+        state.values[group] = chip.dataset.value;
+        chip.parentElement.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        if (state.site === "headneck" && (group === "subsite" || group === "context")) {
+          renderTnmFields();
+          return;
+        }
+        updateResult();
+      });
+    });
+}
+
+function renderTnmFields() {
+  const spec = currentTnmSpec();
+  if (!spec.t.some((item) => item[0] === state.values.t)) state.values.t = spec.t[0][0];
+  if (!spec.n.some((item) => item[0] === state.values.n)) state.values.n = spec.n[0][0];
+  if (!spec.m.some((item) => item[0] === state.values.m)) state.values.m = spec.m[0][0];
+  $("#tnm-fields").innerHTML = `
+    <div class="field">
+      <label>T — primary tumour</label>
+      <div class="chips" data-chips="t">${chipGroup("t", spec.t)}</div>
+    </div>
+    <div class="field">
+      <label>N — regional nodes</label>
+      <div class="chips" data-chips="n">${chipGroup("n", spec.n)}</div>
+    </div>
+    <div class="field">
+      <label>M — distant metastasis</label>
+      <div class="chips" data-chips="m">${chipGroup("m", spec.m)}</div>
+    </div>
+  `;
+  $("#tnm-fields").querySelectorAll(".chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const group = chip.dataset.group;
+      state.values[group] = chip.dataset.value;
+      chip.parentElement.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+      chip.classList.add("active");
+      updateResult();
+    });
+  });
+  updateResult();
 }
 
 function openSite(id) {
   state.site = id;
   const site = SITES.find((s) => s.id === id);
   const spec = OPTIONS[id];
-  state.values = { t: spec.t[0][0], n: spec.n[0][0], m: spec.m[0][0] };
+  state.values = {};
   spec.extra.forEach((e) => {
     state.values[e.id] = e.options[0][0];
   });
+  const tnm = currentTnmSpec();
+  state.values.t = tnm.t[0][0];
+  state.values.n = tnm.n[0][0];
+  state.values.m = tnm.m[0][0];
 
   $("#home").classList.add("hidden");
   $("#stage-view").classList.remove("hidden");
@@ -600,7 +928,7 @@ function openSite(id) {
       (e) => `
       <div class="field extra-field" data-extra="${e.id}">
         <label>${e.label}</label>
-        <div class="chips" data-chips="${e.id}">${chipGroup(e.id, e.options)}</div>
+        <div class="chips" data-chips="${e.id}">${chipGroup(e.id, e.options, true)}</div>
       </div>`
     )
     .join("");
@@ -618,29 +946,11 @@ function openSite(id) {
   $("#form-fields").innerHTML = `
     ${extra}
     ${size}
-    <div class="field">
-      <label>T — primary tumour</label>
-      <div class="chips" data-chips="t">${chipGroup("t", spec.t)}</div>
-    </div>
-    <div class="field">
-      <label>N — regional nodes</label>
-      <div class="chips" data-chips="n">${chipGroup("n", spec.n)}</div>
-    </div>
-    <div class="field">
-      <label>M — distant metastasis</label>
-      <div class="chips" data-chips="m">${chipGroup("m", spec.m)}</div>
-    </div>
+    <div id="tnm-fields"></div>
   `;
 
-  $("#form-fields").querySelectorAll(".chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      const group = chip.dataset.group;
-      state.values[group] = chip.dataset.value;
-      chip.parentElement.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
-      chip.classList.add("active");
-      updateResult();
-    });
-  });
+  bindExtraChips();
+  renderTnmFields();
 
   const sizeInput = $("#size-input");
   if (sizeInput) {
@@ -651,8 +961,6 @@ function openSite(id) {
       if (chip) chip.click();
     });
   }
-
-  updateResult();
 }
 
 function syncExtraVisibility() {
@@ -674,8 +982,15 @@ function updateResult() {
   const tnm = `${state.values.t}${state.values.n}${state.values.m}`;
   $("#stage-out").textContent = stage === "—" ? "Incomplete" : `Stage ${stage}`;
   $("#tnm-out").textContent = tnm;
-  $("#notes-out").innerHTML = NOTES[state.site].map((n) => `<li>${n}</li>`).join("");
-  $("#copy-text").value = `${site.name} · ${site.edition}\n${tnm} · Stage ${stage}`;
+  const notes = state.site === "headneck" ? hnNotes(state.values.subsite) : NOTES[state.site];
+  $("#notes-out").innerHTML = notes.map((n) => `<li>${n}</li>`).join("");
+  if (state.site === "headneck") {
+    $("#site-title").textContent = hnSubsiteLabel(state.values.subsite);
+    $("#site-meta").textContent = `${hnEdition(state.values.subsite)} · Head and neck`;
+    $("#copy-text").value = `${hnSubsiteLabel(state.values.subsite)} · ${hnEdition(state.values.subsite)}\n${tnm} · Stage ${stage}`;
+  } else {
+    $("#copy-text").value = `${site.name} · ${site.edition}\n${tnm} · Stage ${stage}`;
+  }
 }
 
 function copySummary() {
